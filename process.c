@@ -8,72 +8,74 @@
 #include<signal.h>
 #include<sys/wait.h>
 
+
+
+// my signals :: every signal is probably int value
+#define SIGREADY 1
+#define SIGCAUGHT 2
+#define SIGDEAD 3
+
+
+
 void signal_handle(int signal){
-  switch (signal) {
-    case SIGINT: printf("PID %d %s\n",getpid(),"ready");
-    case SIGBUS: printf("PID %d %s\n",getpid(),"caught one");
-    case SIGKILL: printf("PID %d %s\n",getpid(),"dead");
-  }
+    if(signal == SIGREADY ) printf("PID %d %s\n",getpid(),"ready");
+    else if(signal == SIGCAUGHT ) printf("PID %d %s\n",getpid(),"caught one");
+    else if(signal ==  SIGDEAD ) printf("PID %d %s\n",getpid(),"dead");
 }
 
 int main(){
 // to create 5 process (include the source process), i actually create 4 childs
 // for the 4 childrens create , i need to use in 2 times in fork().
 // 2^x = childrens , when x is fork() calls.
-pid_t pid;
-// pid = fork();
-// pid = fork();
 
-size_t round = 0;
+pid_t pid; // temp value for fork function answer
 
-// create 5 process
-pid = fork();
-fork();
-fork();
+pid_t zombies[5];
 
-if(pid >= 0){  // fork success
+// create 4 process :: TOTAL 5 (father process include that)
+for (size_t i = 0; i < 4; i++) {
+  pid = fork();
+  if(!pid)
+    break;
+}
 
-if(pid > 0){ // Father case
-  printf("PID %d %s\n",getpid(),"ready");
-  while(round < 5){
-  round++;
-  signal(SIGINT,signal_handle); // ready case
+for (size_t i = 0; i < 5; i++) {
+  if (signal(SIGREADY, signal_handle) == SIG_ERR){
+  printf("%s\n","can't catch SIGREADY");
+  }
+  else{
   sleep(1);
- }
- printf("PID %d %s\n",getpid(),"caught one");
- while( round >= 5 && round < 10){
-  round++;
-  signal(SIGBUS,signal_handle); // ready case
-  sleep(1);
- }
- printf("PID %d %s\n",getpid(),"dead");
- while(round >= 10 && round < 15){
-  round++;
-  signal(SIGKILL,signal_handle); // ready case
-  sleep(1);
+  kill(getpid(),SIGREADY); // kill and catch the signal
+  break;
   }
 }
-  else if(pid == 0){ // Child case
-    wait(NULL);
-    if(round <= 5){
-    kill(getpid(),SIGINT);
-    signal_handle(SIGINT);
-   }
-   if(round > 5 && round <= 10){
-     kill(getpid(),SIGBUS);
-     signal_handle(SIGBUS);
-   }
-   if(round > 10 && round <= 15){
-     kill(getpid(),SIGKILL);
-     signal_handle(SIGKILL);
-   }
-   exit(1);
 
-}//
+for (size_t i = 0; i < 5; i++) {
+  if (signal(SIGCAUGHT, signal_handle) == SIG_ERR){
+  printf("%s\n","can't catch SIGREADY");
+  }
+  else{
+  sleep(1);
+  kill(getpid(),SIGCAUGHT); // kill and catch the signal
+  break;
+  }
 }
-else{ // failed
-  printf("%s\n","fork() failed");
-  exit(0);
+
+
+pid_t temp; // for the zombies catch
+
+for (size_t i = 0; i < 5; i++) {
+  if (signal(SIGDEAD, signal_handle) == SIG_ERR){
+  printf("%s\n","can't catch SIGREADY");
+  }
+  else{
+  sleep(1);
+  temp = getpid();
+  kill(temp,SIGDEAD); // kill and catch the signal
+  zombies[i] = temp; // father catch all the zombies
+  break;
+  }
 }
-return 0;
+
+exit(0);
 }

@@ -29,7 +29,7 @@ int main(){ // all the process
     // We use two pipes
     // First pipe to send input string from parent - pipe1
     // Second pipe to send concatenated string from child - pipe2
-
+// kill and catch the signal
     int pipe1[2];  // Used to store two ends of first pipe
     int pipe2[2];  // Used to store two ends of second pipe
 
