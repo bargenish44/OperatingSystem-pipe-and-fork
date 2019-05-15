@@ -18,9 +18,12 @@ char * print_that;
 
 void signal_handler(int signo){
   if(signo == SIGINT && current_size == 32){
-  printf("MD5() success,The hash code (answer) for the input is : %s\n",print_that);
-  kill(0,SIGKILL);
+  printf("\nMD5 function success,The hash code (answer) for the input is : \n%s\n",print_that);
+  kill(0,SIGKILL); // father process kill his children
   exit(1);
+ }
+ else{
+   exit(0);
  }
 }
 
