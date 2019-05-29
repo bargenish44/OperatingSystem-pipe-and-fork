@@ -1,4 +1,3 @@
-#include<stdio.h>
 #include<stdlib.h>
 #include<stdio.h>
 #include<unistd.h>
@@ -94,5 +93,6 @@ int main(){ // all the process
        signal(SIGINT,signal_handler);
        wait(NULL);
    }
+
    return 0;
  } // end main()
